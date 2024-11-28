@@ -1,7 +1,3 @@
-Here's the README in English for using the map generator with both graphical and non-graphical versions, along with suggestions for better file names:
-
----
-
 # Map Generator for the "so_long" Game
 
 This project allows you to generate maps for the **so_long** game either via a graphical interface or through the command line. You can customize the map's dimensions, coin and wall percentages, and specify the save file location.
@@ -11,6 +7,52 @@ This project allows you to generate maps for the **so_long** game either via a g
 1. [Non-Graphical Version](#non-graphical-version)
 2. [Graphical Version](#graphical-version)
 3. [Improvement of File Names](#improvement-of-file-names)
+
+---
+
+## Graphical Version
+
+The graphical version allows you to generate a map via a graphical user interface (GUI). You can input the width, height, coin and wall percentages, and display the generated map in a new window.
+
+### Prerequisites
+
+1. **Python 3.x** installed on your machine.
+2. Install project dependencies, including those for the graphical interface.
+
+```bash
+pip install -r requirements-gui.txt
+```
+
+### Usage
+
+Run the `map_generator_gui.py` script to open the graphical interface and generate a map.
+
+```bash
+python map_generator_gui.py
+```
+
+A window will appear where you can input the following parameters:
+
+- **Width**: Map width (between 3 and 150).
+- **Height**: Map height (between 3 and 150).
+- **Coin percentage**: Coin percentage (between 0 and 100).
+- **Wall percentage**: Wall percentage (between 0 and 99).
+- **Save file path**: Path where the generated map will be saved.
+- **Debug mode**: Enable debug mode to display the generated map in the console.
+
+Once the parameters are defined, click "Generate" to create the map and display a success or failure message.
+
+### Debug Mode
+
+- **Iterations**: The number of iterations to attempt to generate a valid map.
+- **Show Map**: Display the generated map in the console.
+- **Max Iterations**: The maximum number of iterations to attempt to generate a valid map.
+- **Stats**: Display the map generation statistics (number of coins, walls, and empty spaces).
+
+
+### Main Code
+
+The main logic is located in `map_generator_gui.py`, where you can interact with the GUI to generate a map.
 
 ---
 
@@ -69,52 +111,6 @@ The script validates the input parameters to ensure they meet the following requ
 ### Main Code
 
 The main logic is located in `map_generator_cli.py`, which uses the `main` function to generate and save the map in a `.ber` file. The map is generated until a valid map is produced.
-
----
-
-## Graphical Version
-
-The graphical version allows you to generate a map via a graphical user interface (GUI). You can input the width, height, coin and wall percentages, and display the generated map in a new window.
-
-### Prerequisites
-
-1. **Python 3.x** installed on your machine.
-2. Install project dependencies, including those for the graphical interface.
-
-```bash
-pip install -r requirements-gui.txt
-```
-
-### Usage
-
-Run the `map_generator_gui.py` script to open the graphical interface and generate a map.
-
-```bash
-python map_generator_gui.py
-```
-
-A window will appear where you can input the following parameters:
-
-- **Width**: Map width (between 3 and 150).
-- **Height**: Map height (between 3 and 150).
-- **Coin percentage**: Coin percentage (between 0 and 100).
-- **Wall percentage**: Wall percentage (between 0 and 99).
-- **Save file path**: Path where the generated map will be saved.
-- **Debug mode**: Enable debug mode to display the generated map in the console.
-
-Once the parameters are defined, click "Generate" to create the map and display a success or failure message.
-
-### Debug Mode
-
-- **Iterations**: The number of iterations to attempt to generate a valid map.
-- **Show Map**: Display the generated map in the console.
-- **Max Iterations**: The maximum number of iterations to attempt to generate a valid map.
-- **Stats**: Display the map generation statistics (number of coins, walls, and empty spaces).
-
-
-### Main Code
-
-The main logic is located in `map_generator_gui.py`, where you can interact with the GUI to generate a map.
 
 ---
 
