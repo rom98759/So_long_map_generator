@@ -4,8 +4,8 @@ This project allows you to generate maps for the **so_long** game either via a g
 
 ## Table of Contents
 
-1. [Non-Graphical Version](#non-graphical-version)
-2. [Graphical Version](#graphical-version)
+1. [Graphical Version](#graphical-version)
+2. [Non-Graphical Version](#non-graphical-version)
 3. [Improvement of File Names](#improvement-of-file-names)
 
 ---
@@ -13,6 +13,12 @@ This project allows you to generate maps for the **so_long** game either via a g
 ## Graphical Version
 
 The graphical version allows you to generate a map via a graphical user interface (GUI). You can input the width, height, coin and wall percentages, and display the generated map in a new window.
+
+### Screenshot
+
+Below is a screenshot of the graphical interface:
+
+![Graphical Interface Screenshot](img/gui.png)
 
 ### Prerequisites
 
@@ -44,6 +50,10 @@ Once the parameters are defined, click "Generate" to create the map and display 
 
 ### Debug Mode
 
+![Screenshot of the debug mode](img/gui_debug.png)
+
+When the debug mode is enabled, the following additional options are available:
+
 - **Iterations**: The number of iterations to attempt to generate a valid map.
 - **Show Map**: Display the generated map in the console.
 - **Max Iterations**: The maximum number of iterations to attempt to generate a valid map.
@@ -59,6 +69,12 @@ The main logic is located in `map_generator_gui.py`, where you can interact with
 ## Non-Graphical Version
 
 The non-graphical version allows you to generate a map directly from the command line without a graphical interface. You can specify the map's dimensions, coin percentage, and wall percentage.
+
+⚠️ **Attention**
+
+The non-graphical version has fewer security measures compared to the graphical version. Ensure that the input parameters are validated before running the script.
+
+![Screenshot of the command line interface](img/cli.png)
 
 ### Prerequisites
 
@@ -113,6 +129,11 @@ The script validates the input parameters to ensure they meet the following requ
 The main logic is located in `map_generator_cli.py`, which uses the `main` function to generate and save the map in a `.ber` file. The map is generated until a valid map is produced.
 
 ---
+
+## Need to fix
+- [ ] The map generation algorithm is not efficient and may take a long time to generate a valid map for large dimensions.
+- [ ] Folder creation for the save file path is not implemented.
+
 
 
 ## Contributing
