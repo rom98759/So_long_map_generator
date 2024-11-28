@@ -286,6 +286,10 @@ def gui():
                             status_label.config(text="Map generated successfully.", bootstyle="success")
                             visualize_button.config(state=tk.NORMAL)
                             show_map_in_new_window(map_data)
+                            if print_map_in_terminal.get() and debug_mode.get():
+                                show_map_in_terminal(map_data)
+                            if print_map_stats.get() and debug_mode.get():
+                                show_stats(map_data)
                             break
                         else:
                             iterations += 1
@@ -312,6 +316,37 @@ def gui():
     def quit_action():
         root.quit()
 
+    def show_stats(map_data):
+        """ Affiche les statistiques de la carte générée """
+        num_coins = sum(row.count('C') for row in map_data)
+        num_walls = sum(row.count('1') for row in map_data)
+        num_empty = sum(row.count('0') for row in map_data)
+        print(f"Coins: {num_coins}")
+        print(f"Walls: {num_walls}")
+        print(f"Empty spaces: {num_empty}")
+        show_debug_stats(map_data)
+
+    def show_debug_stats(map_data):
+        player_pos = None
+        exit_pos = None
+        for y, row in enumerate(map_data):
+            for x, cell in enumerate(row):
+                if cell == 'P':
+                    player_pos = (x, y)
+                if cell == 'E':
+                    exit_pos = (x, y)
+        if player_pos and exit_pos:
+            print(f"Player position: {player_pos}")
+            print(f"Exit position: {exit_pos}")
+        else:
+            print("Player or Exit not found in map.")
+
+    def show_map_in_terminal(map_data):
+        """ Display the map in the terminal with characters 1, 0, C, P, E """
+        print("Map in terminal:")
+        for row in map_data:
+            print(' '.join(row))
+
     # Create the main window
     root = ttkb.Window(themename="vapor")
     root.title("So_long Map Generator")
@@ -329,17 +364,21 @@ def gui():
     height_entry.insert(0, "20")
     height_entry.grid(row=1, column=1, padx=10, pady=5)
 
-    ttkb.Label(root, text="Percentage of coins:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+    ttkb.Label(root, text="Coins :").grid(row=2, column=0, padx=10, pady=5, sticky="w")
     coins_entry = ttkb.Entry(root)
     coins_entry.insert(0, "10")
     coins_entry.grid(row=2, column=1, padx=10, pady=5)
+    ttkb.Label(root, text="%").grid(row=2, column=2, padx=10, pady=5, sticky="w")
 
-    ttkb.Label(root, text="Percentage of walls:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+
+    ttkb.Label(root, text="Walls:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
     walls_entry = ttkb.Entry(root)
     walls_entry.insert(0, "10")
     walls_entry.grid(row=3, column=1, padx=10, pady=5)
+    ttkb.Label(root, text="%").grid(row=3, column=2, padx=10, pady=5, sticky="w")
 
-    ttkb.Label(root, text="Save path:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+
+    ttkb.Label(root, text="Save path :").grid(row=4, column=0, padx=10, pady=5, sticky="w")
     path_entry = ttkb.Entry(root)
     path_entry.insert(0, "maps/map.ber")
     path_entry.grid(row=4, column=1, padx=10, pady=5)
@@ -371,7 +410,7 @@ def gui():
     debug_checkbox.grid(row=7, column=0, columnspan=3, pady=5)
 
     # Max iterations label and entry (hidden by default)
-    max_iterations_label = ttkb.Label(root, text="Max Iterations:")
+    max_iterations_label = ttkb.Label(root, text="Max Iterations :")
     max_iterations_entry = ttkb.Entry(root)
     max_iterations_entry.insert(0, "5000")
 
@@ -381,15 +420,27 @@ def gui():
 
     # Print iterations to the console when debug mode is enabled checkbox (hidden by default)
     print_iterations = tk.BooleanVar()
-    print_iterations_checkbox = ttkb.Checkbutton(root, text="Print Iterations", variable=print_iterations)
+    print_iterations_checkbox = ttkb.Checkbutton(root, text="Print Iterations ", variable=print_iterations)
     print_iterations_checkbox.grid_forget()
+
+    # Show the map in the terminal when debug mode is enabled checkbox (hidden by default)
+    print_map_in_terminal = tk.BooleanVar()
+    print_map_in_terminal_checkbox = ttkb.Checkbutton(root, text="Print Map in Terminal ", variable=print_map_in_terminal)
+    print_map_in_terminal_checkbox.grid_forget()
+
+    # Show the map statistics when debug mode is enabled checkbox (hidden by default)
+    print_map_stats = tk.BooleanVar()
+    print_map_stats_checkbox = ttkb.Checkbutton(root, text="Show Map Stats ", variable=print_map_stats)
+    print_map_stats_checkbox.grid_forget()
 
     # Show or hide max iterations input based on the debug mode
     def toggle_debug_mode():
         if debug_mode.get():
-            max_iterations_label.grid(row=9, column=0, padx=10, pady=5, sticky="w")
-            max_iterations_entry.grid(row=9, column=1, padx=10, pady=5)
-            print_iterations_checkbox.grid(row=8, column=1, padx=10, pady=5)
+            max_iterations_label.grid(row=11, column=0, padx=10, pady=5, sticky="w")
+            max_iterations_entry.grid(row=11, column=1, padx=10, pady=5, sticky="ew")
+            print_map_stats_checkbox.grid(row=9, column=0, padx=10, pady=5, sticky="w", columnspan=2)
+            print_map_in_terminal_checkbox.grid(row=10, column=0, padx=10, pady=5, sticky="w", columnspan=2)
+            print_iterations_checkbox.grid(row=8, column=0, padx=10, pady=5, sticky="w", columnspan=2)
 
             # Resize the window to accommodate debug mode fields
             root.geometry("400x500")  # Resize the window to make space for debug elements
@@ -397,6 +448,8 @@ def gui():
             max_iterations_label.grid_forget()
             max_iterations_entry.grid_forget()
             print_iterations_checkbox.grid_forget()
+            print_map_in_terminal_checkbox.grid_forget()
+            print_map_stats_checkbox.grid_forget()
 
             # Resize the window back to its original size when debug mode is off
             root.geometry("400x400")
