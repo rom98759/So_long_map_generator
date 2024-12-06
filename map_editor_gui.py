@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, colorchooser
 import ttkbootstrap as ttkb
 
 def load_map_from_file(file_path):
@@ -36,6 +36,7 @@ def open_map_editor(map_data):
 
     # Colors for different tiles
     color_map = {'P': 'midnightblue', 'E': 'firebrick', 'C': 'gold', '1': 'darkgray', '0': 'darkslategray'}
+    tile_types = {'Player': 'P', 'Exit': 'E', 'Coin': 'C', 'Wall': '1', 'Empty': '0'}
 
     canvas = tk.Canvas(editor_window, width=len(map_data[0]) * cell_size, height=len(map_data) * cell_size)
     canvas.grid(row=0, column=0, rowspan=5)
@@ -61,10 +62,20 @@ def open_map_editor(map_data):
 
     canvas.bind("<Button-1>", on_canvas_click)
 
-    # Tile selection buttons
-    tile_types = {'Player': 'P', 'Exit': 'E', 'Coin': 'C', 'Wall': '1', 'Empty': '0'}
-    for i, (label, value) in enumerate(tile_types.items()):
-        ttkb.Radiobutton(editor_window, text=label, variable=selected_tile, value=value).grid(row=i, column=1, sticky=tk.W)
+    # Update tile selection buttons dynamically
+    def update_tile_buttons():
+        """Update the tile selection buttons."""
+        for widget in tile_buttons_frame.winfo_children():
+            widget.destroy()
+
+        for i, (label, value) in enumerate(tile_types.items()):
+            ttkb.Radiobutton(tile_buttons_frame, text=label, variable=selected_tile, value=value).grid(row=i, column=0, sticky=tk.W)
+
+    tile_buttons_frame = ttkb.Frame(editor_window)
+    tile_buttons_frame.grid(row=0, column=1, padx=10, pady=5)
+
+    # Initial update of the buttons
+    update_tile_buttons()
 
     def save_map():
         """Save the current map to a file."""
@@ -77,13 +88,70 @@ def open_map_editor(map_data):
 
     ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=5, column=1, sticky=tk.W)
 
+    # Add/Edit Tile Type Features
+    def add_tile_type():
+        """Add a new tile type with a character and color."""
+        def save_new_type():
+            type_name = type_name_entry.get()
+            char = char_entry.get()
+            color = colorchooser.askcolor()[1]
+            if type_name and char and color:
+                color_map[type_name] = color
+                tile_types[type_name] = char
+                update_tile_buttons()  # Re-update tile buttons to include the new type
+                update_tile_legend()
+                add_window.destroy()
+
+        # Window to add a new tile type
+        add_window = tk.Toplevel(editor_window)
+        add_window.title("Add New Tile Type")
+
+        ttkb.Label(add_window, text="Type Name:").grid(row=0, column=0, padx=10, pady=5)
+        type_name_entry = ttkb.Entry(add_window)
+        type_name_entry.grid(row=0, column=1, padx=10, pady=5)
+
+        ttkb.Label(add_window, text="Character:").grid(row=1, column=0, padx=10, pady=5)
+        char_entry = ttkb.Entry(add_window)
+        char_entry.grid(row=1, column=1, padx=10, pady=5)
+
+        ttkb.Button(add_window, text="Save", command=save_new_type).grid(row=2, column=0, columnspan=2, pady=10)
+
+    def edit_tile_color(type_name):
+        """Edit the color of an existing tile type."""
+        color = colorchooser.askcolor()[1]
+        if color:
+            color_map[type_name] = color
+            update_tile_legend()
+
+    def update_tile_legend():
+        """Update the tile legend displayed on the editor."""
+        for widget in tile_legend_frame.winfo_children():
+            widget.destroy()
+
+        # Add legend entries
+        row = 0
+        for tile_name, color in color_map.items():
+            label = ttkb.Label(tile_legend_frame, text=tile_name, width=10, anchor="w")
+            label.grid(row=row, column=0, padx=10, pady=5)
+            color_box = ttkb.Label(tile_legend_frame, text="   ", background=color, width=10)
+            color_box.grid(row=row, column=1)
+            color_box.bind("<Button-1>", lambda e, name=tile_name: edit_tile_color(name))
+            row += 1
+
+    tile_legend_frame = ttkb.Frame(editor_window)
+    tile_legend_frame.grid(row=6, column=0, columnspan=2, pady=10)
+
+    # Add button to add new tile type
+    ttkb.Button(editor_window, text="Add Tile Type", command=add_tile_type, bootstyle="primary").grid(row=5, column=0, pady=5)
+
+    update_tile_legend()
     draw_map()
 
 def main():
     """Main GUI application."""
     root = ttkb.Window(themename="darkly")
     root.title("Map Editor")
-    root.geometry("400x200")
+    root.geometry("500x400")
 
     def load_map():
         """Load a map from a file and open the editor."""
