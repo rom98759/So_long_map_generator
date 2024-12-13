@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser
 import ttkbootstrap as ttkb
+import random
 
 def load_map_from_file(file_path):
     """Load map data from a file."""
@@ -21,6 +22,37 @@ def save_map_to_file(map_data, file_path):
         messagebox.showinfo("Success", "Map saved successfully!")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to save map: {e}")
+
+def validate_map_data(map_data):
+    """Validate the map data."""
+    rows = len(map_data)
+    cols = len(map_data[0])
+    player_count = 0
+    exit_count = 0
+    coin_count = 0
+
+    for y, row in enumerate(map_data):
+        if len(row) != cols:
+            return False, "All rows must have the same number of columns."
+        for x, cell in enumerate(row):
+            if y == 0 or y == rows - 1 or x == 0 or x == cols - 1:
+                if cell != '1':
+                    return False, "The map must be surrounded by walls."
+            if cell == 'P':
+                player_count += 1
+            elif cell == 'E':
+                exit_count += 1
+            elif cell == 'C':
+                coin_count += 1
+
+    if player_count != 1:
+        return False, "There must be exactly one player."
+    if exit_count != 1:
+        return False, "There must be exactly one exit."
+    if coin_count < 1:
+        return False, "There must be at least one coin."
+
+    return True, "The map is valid."
 
 def open_map_editor(map_data):
     """Open the map editor window."""
@@ -59,34 +91,51 @@ def open_map_editor(map_data):
                         text=cell, fill='black', font=('Helvetica', 10)
                     )
 
-    # Global variable to track the dragging state
-    is_dragging = False
+    # Global variable to track the dragging state left-click
+    is_dragging_left = False
+    is_dragging_right = False
+    is_locked = tk.BooleanVar(value=False)
 
     def on_canvas_click(event):
         """Handle clicks to change tile type."""
-        global is_dragging
+        global is_dragging_left, is_dragging_right
         x, y = event.x // cell_size, event.y // cell_size
+        if is_locked.get() and (x == 0 or y == 0 or x == len(map_data[0]) - 1 or y == len(map_data) - 1):
+            return  # Prevent editing of outer walls if locked
         if 0 <= y < len(map_data) and 0 <= x < len(map_data[0]):
-            map_data[y][x] = selected_tile.get()
+            if event.num == 1:  # Left click
+                map_data[y][x] = selected_tile.get()
+            elif event.num == 3:  # Right click
+                map_data[y][x] = '0'  # Set to EMPTY
             draw_map()
-            is_dragging = True
+            is_dragging_left = event.num == 1
+            is_dragging_right = event.num == 3
 
     def on_canvas_motion(event):
         """Handle mouse movement to change tile type while dragging."""
-        global is_dragging
+        global is_dragging_left, is_dragging_right
         x, y = event.x // cell_size, event.y // cell_size
-        if is_dragging and 0 <= y < len(map_data) and 0 <= x < len(map_data[0]):
+        if is_locked.get() and (x == 0 or y == 0 or x == len(map_data[0]) - 1 or y == len(map_data) - 1):
+            return  # Prevent editing of outer walls if locked
+        if is_dragging_left and 0 <= y < len(map_data) and 0 <= x < len(map_data[0]):
             map_data[y][x] = selected_tile.get()
+            draw_map()
+        elif is_dragging_right and 0 <= y < len(map_data) and 0 <= x < len(map_data[0]):
+            map_data[y][x] = '0'
             draw_map()
 
     def on_canvas_release(event):
         """Stop the drag when mouse button is released."""
-        global is_dragging
-        is_dragging = False
+        global is_dragging_left, is_dragging_right
+        is_dragging_left = False
+        is_dragging_right = False
 
     canvas.bind("<Button-1>", on_canvas_click) # Handle clicks to change tile type
     canvas.bind("<B1-Motion>", on_canvas_motion)  # Handle dragging/moving with click held
     canvas.bind("<ButtonRelease-1>", on_canvas_release)  # Stop dragging when mouse is released
+    canvas.bind("<Button-3>", on_canvas_click)  # Bind right-click event to change to EMPTY
+    canvas.bind("<B3-Motion>", on_canvas_motion)  # Bind right-click dragging to change to EMPTY
+    canvas.bind("<ButtonRelease-3>", on_canvas_release)  # Stop dragging when mouse is released
 
     # Update tile selection buttons dynamically
     def update_tile_buttons():
@@ -94,14 +143,14 @@ def open_map_editor(map_data):
         for widget in tile_buttons_frame.winfo_children():
             widget.destroy()
 
+        # Add tile type buttons
+        ttkb.Label(tile_buttons_frame, text="Tile Types", font=("Helvetica", 12, "bold")).grid(row=0, column=0, padx=10, pady=5)
+
         for i, (label, value) in enumerate(tile_types.items()):
-            ttkb.Radiobutton(tile_buttons_frame, text=label, variable=selected_tile, value=value).grid(row=i, column=0, sticky=tk.W, padx=10, pady=5)
+            ttkb.Radiobutton(tile_buttons_frame, text=label, variable=selected_tile, value=value).grid(row=i + 1, column=0, sticky=tk.W, padx=10, pady=5)
 
     tile_buttons_frame = ttkb.Frame(editor_window)
     tile_buttons_frame.grid(row=0, column=0, padx=10, pady=5)
-
-    # Initial update of the buttons
-    update_tile_buttons()
 
     def save_map():
         """Save the current map to a file."""
@@ -112,7 +161,7 @@ def open_map_editor(map_data):
         if file_path:
             save_map_to_file(map_data, file_path)
 
-    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=5, column=1, pady=5)
+    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=7, column=2, pady=5)
 
     # Add/Edit Tile Type Features
     def add_tile_type():
@@ -130,9 +179,10 @@ def open_map_editor(map_data):
             if type_name and char and color:
                 color_map[type_name] = color
                 tile_types[type_name] = char
-                update_tile_buttons()  # Re-update tile buttons to include the new type
+                update_tile_buttons()
                 update_tile_legend()
                 add_window.destroy()
+                draw_map()
 
         # Window to add a new tile type
         add_window = tk.Toplevel(editor_window)
@@ -160,8 +210,11 @@ def open_map_editor(map_data):
         for widget in tile_legend_frame.winfo_children():
             widget.destroy()
 
+        # Add tile legend
+        ttkb.Label(tile_legend_frame, text="Tile Legend", font=("Helvetica", 12, "bold")).grid(row=0, column=0, columnspan=2, padx=10, pady=5)
+
         # Add legend entries
-        row = 0
+        row = 1
         for tile_name, color in color_map.items():
             label = ttkb.Label(tile_legend_frame, text=tile_name, width=10, anchor="w")
             label.grid(row=row, column=0, padx=10, pady=5)
@@ -174,9 +227,46 @@ def open_map_editor(map_data):
     tile_legend_frame.grid(row=0, column=2, padx=10, pady=10, rowspan=5)
 
     # Add button to add new tile type
-    ttkb.Button(editor_window, text="Add Tile Type", command=add_tile_type, bootstyle="primary").grid(row=5, column=0, pady=5)
+    ttkb.Button(editor_window, text="Add Tile Type", command=add_tile_type, bootstyle="primary").grid(row=6, column=1, pady=5)
 
-    update_tile_legend()
+    def detect_unknown_tiles():
+        """Detect unknown tiles in the map and add them dynamically."""
+        for row in map_data:
+            for cell in row:
+                if cell not in tile_types.values():
+                    # Add unknown character with a random color
+                    random_color = "#%06x" % random.randint(0, 0xFFFFFF)
+                    tile_types[f"Unknown ({cell})"] = cell
+                    color_map[cell] = random_color
+        update_tile_buttons()
+        update_tile_legend()
+
+    def delete_tile_type():
+        """Delete the currently selected tile type."""
+        selected_label = selected_tile.get()
+        for label, value in list(tile_types.items()):
+            if value == selected_label:
+                del tile_types[label]
+                del color_map[value]
+                update_tile_buttons()
+                update_tile_legend()
+                return
+
+    ttkb.Button(editor_window, text="Delete Tile Type", command=delete_tile_type, bootstyle="danger").grid(row=6, column=0, pady=5)
+
+    def validate_map():
+        """Validate the current map."""
+        is_valid, message = validate_map_data(map_data)
+        if is_valid:
+            messagebox.showinfo("Validation", message)
+        else:
+            messagebox.showerror("Validation Error", message)
+
+    ttkb.Button(editor_window, text="Validate Map", command=validate_map, bootstyle="warning").grid(row=5, column=2, pady=5)
+    ttkb.Checkbutton(editor_window, text="Lock Outer Walls", variable=is_locked, bootstyle="info").grid(row=6, column=2, pady=5)
+    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=7, column=2, pady=5)
+
+    detect_unknown_tiles()
     draw_map()
 
 def main():
