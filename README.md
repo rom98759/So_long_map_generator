@@ -7,7 +7,6 @@ This project allows you to generate maps for the **so_long** game either via a g
 1. [Graphical Version](#graphical-version)
 2. [Editor Version](#editor-version)
 3. [Non-Graphical Version](#non-graphical-version)
-4. [Improvement of File Names](#improvement-of-file-names)
 
 ---
 
