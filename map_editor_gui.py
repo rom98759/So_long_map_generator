@@ -161,7 +161,7 @@ def open_map_editor(map_data):
             color_box = ttkb.Label(tile_frame, text="   ", background=color_map[value], width=10)
             color_box.grid(row=row, column=0, padx=10, pady=5)
             color_box.bind("<Button-1>", lambda e, name=value: edit_tile_color(name))
-            legend_label = ttkb.Label(tile_frame, text=value, width=10, anchor="w")
+            legend_label = ttkb.Label(tile_frame, text=f'[{value}]', width=10, anchor="w")
             legend_label.grid(row=row, column=2, padx=10, pady=5)
             row += 1
 
@@ -176,6 +176,9 @@ def open_map_editor(map_data):
             char = char_entry.get()
             if char in tile_types.values():
                 messagebox.showerror("Error", "Tile type already exists!")
+                return
+            if type_name in tile_types:
+                messagebox.showerror("Error", "Tile type name already exists!")
                 return
             if len(char) != 1:
                 messagebox.showerror("Error", "Character must be a single character!")
@@ -251,11 +254,15 @@ def open_map_editor(map_data):
     detect_unknown_tiles()
     draw_map()
 
+def help_button():
+    import os
+    os.system("README.md")
+
 def main():
     """Main GUI application."""
     root = ttkb.Window(themename="darkly")
     root.title("Map Editor")
-    root.geometry("600x400")
+    root.geometry("500x400")
 
     def load_map():
         """Load a map from a file and open the editor."""
@@ -266,11 +273,16 @@ def main():
         if file_path:
             map_data = load_map_from_file(file_path)
             if map_data:
+                # Reduit la fenêtre principale
+                root.iconify()
                 open_map_editor(map_data)
 
     ttkb.Label(root, text="Welcome to the Map Editor", font=("Helvetica", 16)).pack(pady=10)
     ttkb.Button(root, text="Open Map", command=load_map, bootstyle="primary", width=20).pack(pady=5)
     ttkb.Button(root, text="Quit", command=root.quit, bootstyle="danger", width=20).pack(pady=5)
+
+    # HELP BUTTON
+    ttkb.Button(root, text="Help", command=help_button, bootstyle="info", width=20).pack(pady=5)
 
     root.mainloop()
 
