@@ -137,21 +137,6 @@ def open_map_editor(map_data):
     canvas.bind("<B3-Motion>", on_canvas_motion)  # Bind right-click dragging to change to EMPTY
     canvas.bind("<ButtonRelease-3>", on_canvas_release)  # Stop dragging when mouse is released
 
-    # Update tile selection buttons dynamically
-    def update_tile_buttons():
-        """Update the tile selection buttons."""
-        for widget in tile_buttons_frame.winfo_children():
-            widget.destroy()
-
-        # Add tile type buttons
-        ttkb.Label(tile_buttons_frame, text="Tile Types", font=("Helvetica", 12, "bold")).grid(row=0, column=0, padx=10, pady=5)
-
-        for i, (label, value) in enumerate(tile_types.items()):
-            ttkb.Radiobutton(tile_buttons_frame, text=label, variable=selected_tile, value=value).grid(row=i + 1, column=0, sticky=tk.W, padx=10, pady=5)
-
-    tile_buttons_frame = ttkb.Frame(editor_window)
-    tile_buttons_frame.grid(row=0, column=0, padx=10, pady=5)
-
     def save_map():
         """Save the current map to a file."""
         file_path = filedialog.asksaveasfilename(
@@ -161,7 +146,27 @@ def open_map_editor(map_data):
         if file_path:
             save_map_to_file(map_data, file_path)
 
-    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=7, column=2, pady=5)
+    # Update tile selection buttons dynamically
+    def update_tile_buttons_and_legend():
+        """Update the tile selection buttons and legend."""
+        for widget in tile_frame.winfo_children():
+            widget.destroy()
+
+        # Add tile type buttons and legend
+        ttkb.Label(tile_frame, text="Tile Types & Legend", font=("Helvetica", 12, "bold")).grid(row=0, column=0, columnspan=3, padx=10, pady=5)
+
+        row = 1
+        for label, value in tile_types.items():
+            ttkb.Radiobutton(tile_frame, text=label, variable=selected_tile, value=value).grid(row=row, column=1, sticky=tk.W, padx=10, pady=5)
+            color_box = ttkb.Label(tile_frame, text="   ", background=color_map[value], width=10)
+            color_box.grid(row=row, column=0, padx=10, pady=5)
+            color_box.bind("<Button-1>", lambda e, name=value: edit_tile_color(name))
+            legend_label = ttkb.Label(tile_frame, text=value, width=10, anchor="w")
+            legend_label.grid(row=row, column=2, padx=10, pady=5)
+            row += 1
+
+    tile_frame = ttkb.Frame(editor_window)
+    tile_frame.grid(row=0, column=0, padx=10, pady=10, rowspan=5)
 
     # Add/Edit Tile Type Features
     def add_tile_type():
@@ -179,8 +184,7 @@ def open_map_editor(map_data):
             if type_name and char and color:
                 color_map[type_name] = color
                 tile_types[type_name] = char
-                update_tile_buttons()
-                update_tile_legend()
+                update_tile_buttons_and_legend()
                 add_window.destroy()
                 draw_map()
 
@@ -203,31 +207,8 @@ def open_map_editor(map_data):
         color = colorchooser.askcolor()[1]
         if color:
             color_map[type_name] = color
-            update_tile_legend()
-
-    def update_tile_legend():
-        """Update the tile legend displayed on the editor."""
-        for widget in tile_legend_frame.winfo_children():
-            widget.destroy()
-
-        # Add tile legend
-        ttkb.Label(tile_legend_frame, text="Tile Legend", font=("Helvetica", 12, "bold")).grid(row=0, column=0, columnspan=2, padx=10, pady=5)
-
-        # Add legend entries
-        row = 1
-        for tile_name, color in color_map.items():
-            label = ttkb.Label(tile_legend_frame, text=tile_name, width=10, anchor="w")
-            label.grid(row=row, column=0, padx=10, pady=5)
-            color_box = ttkb.Label(tile_legend_frame, text="   ", background=color, width=10)
-            color_box.grid(row=row, column=1)
-            color_box.bind("<Button-1>", lambda e, name=tile_name: edit_tile_color(name))
-            row += 1
-
-    tile_legend_frame = ttkb.Frame(editor_window)
-    tile_legend_frame.grid(row=0, column=2, padx=10, pady=10, rowspan=5)
-
-    # Add button to add new tile type
-    ttkb.Button(editor_window, text="Add Tile Type", command=add_tile_type, bootstyle="primary").grid(row=6, column=1, pady=5)
+            update_tile_buttons_and_legend()
+            draw_map()
 
     def detect_unknown_tiles():
         """Detect unknown tiles in the map and add them dynamically."""
@@ -238,8 +219,7 @@ def open_map_editor(map_data):
                     random_color = "#%06x" % random.randint(0, 0xFFFFFF)
                     tile_types[f"Unknown ({cell})"] = cell
                     color_map[cell] = random_color
-        update_tile_buttons()
-        update_tile_legend()
+        update_tile_buttons_and_legend()
 
     def delete_tile_type():
         """Delete the currently selected tile type."""
@@ -248,11 +228,11 @@ def open_map_editor(map_data):
             if value == selected_label:
                 del tile_types[label]
                 del color_map[value]
-                update_tile_buttons()
-                update_tile_legend()
+                update_tile_buttons_and_legend()
                 return
 
-    ttkb.Button(editor_window, text="Delete Tile Type", command=delete_tile_type, bootstyle="danger").grid(row=6, column=0, pady=5)
+    ttkb.Button(editor_window, text="Add Tile Type", command=add_tile_type, bootstyle="primary").grid(row=6, column=0, pady=5)
+    ttkb.Button(editor_window, text="Delete Tile Type", command=delete_tile_type, bootstyle="danger").grid(row=7, column=0, pady=5)
 
     def validate_map():
         """Validate the current map."""
@@ -262,9 +242,11 @@ def open_map_editor(map_data):
         else:
             messagebox.showerror("Validation Error", message)
 
-    ttkb.Button(editor_window, text="Validate Map", command=validate_map, bootstyle="warning").grid(row=5, column=2, pady=5)
-    ttkb.Checkbutton(editor_window, text="Lock Outer Walls", variable=is_locked, bootstyle="info").grid(row=6, column=2, pady=5)
-    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=7, column=2, pady=5)
+    ttkb.Button(editor_window, text="Validate Map", command=validate_map, bootstyle="warning").grid(row=1, column=2, pady=0, padx=10)
+    ttkb.Checkbutton(editor_window, text="Lock Outer Walls", variable=is_locked, bootstyle="info").grid(row=2, column=2, pady=0, padx=10)
+    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=3, column=2, pady=0, padx=10)
+
+    ttkb.Label(editor_window, text=" ").grid(row=0, column=3, padx=20)
 
     detect_unknown_tiles()
     draw_map()
