@@ -139,3 +139,8 @@ The main logic is located in `map_generator_cli.py`, which uses the `main` funct
 ## Contributing
 
 If you'd like to contribute to the project, please fork the repository, make your changes, and submit a pull request.
+
+
+
+Add help button and locker button a gauche
+Faire canva avec tiles and locker 
