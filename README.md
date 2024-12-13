@@ -7,7 +7,6 @@ This project allows you to generate maps for the **so_long** game either via a g
 1. [Graphical Version](#graphical-version)
 2. [Editor Version](#editor-version)
 3. [Non-Graphical Version](#non-graphical-version)
-4. [Improvement of File Names](#improvement-of-file-names)
 
 ---
 
@@ -115,11 +114,6 @@ The non-graphical version has fewer security measures compared to the graphical 
 ### Prerequisites
 
 1. **Python 3.x** installed on your machine.
-2. Install project dependencies (if applicable).
-
-```bash
-pip install -r requirements.txt
-```
 
 ### Usage
 
