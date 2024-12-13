@@ -3,7 +3,7 @@ from copy import deepcopy
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttkb
-from map_editor_gui import open_map_editor
+from map_editor import open_map_editor
 
 # ======================================================================================================================
 # Generate a valid map for the so_long game

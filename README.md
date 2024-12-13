@@ -5,8 +5,9 @@ This project allows you to generate maps for the **so_long** game either via a g
 ## Table of Contents
 
 1. [Graphical Version](#graphical-version)
-2. [Non-Graphical Version](#non-graphical-version)
-3. [Improvement of File Names](#improvement-of-file-names)
+2. [Editor Version](#editor-version)
+3. [Non-Graphical Version](#non-graphical-version)
+4. [Improvement of File Names](#improvement-of-file-names)
 
 ---
 
@@ -26,7 +27,7 @@ Below is a screenshot of the graphical interface:
 2. Install project dependencies, including those for the graphical interface.
 
 ```bash
-pip install -r requirements-gui.txt
+pip install -r requirements.txt
 ```
 
 ### Usage
@@ -44,6 +45,7 @@ A window will appear where you can input the following parameters:
 - **Coin percentage**: Coin percentage (between 0 and 100).
 - **Wall percentage**: Wall percentage (between 0 and 99).
 - **Save file path**: Path where the generated map will be saved.
+- **Editor**: Open the map editor to customize the map.
 - **Debug mode**: Enable debug mode to display the generated map in the console.
 
 Once the parameters are defined, click "Generate" to create the map and display a success or failure message.
@@ -59,10 +61,41 @@ When the debug mode is enabled, the following additional options are available:
 - **Max Iterations**: The maximum number of iterations to attempt to generate a valid map.
 - **Stats**: Display the map generation statistics (number of coins, walls, and empty spaces).
 
+---
 
-### Main Code
+## Editor Version
 
-The main logic is located in `map_generator_gui.py`, where you can interact with the GUI to generate a map.
+The editor version allows you to customize the generated map by adding or removing coins and walls. You can also save the edited map to a file.
+
+### Screenshot
+
+Below is a screenshot of the map editor interface:
+
+![Map Editor Screenshot](img/editor.png)
+
+### Usage
+
+To open the map editor, click the "Editor" button in the graphical interface. The editor window will appear, displaying the generated map.
+Or you can run the `map_editor.py` script directly.
+
+```bash
+python map_editor.py
+```
+
+### Features
+
+
+![Screenshot of the map editor features](img/editor_features.png)
+
+The map editor provides the following features:
+
+- **Tile Selection**: Click on a tile to select it (empty, coin, or wall).
+- **Add Tile**: Click on buttons to specific tiles to add them to the list.
+- **Remove Tile**: Click on buttons to remove selected tiles from the list.
+- **Color Selection**: Choose a color from the palette to change the selected tile's color.
+- **Save Map**: Save the edited map to a file.
+- **Validate Map**: Check if the map is valid (contains a player, exit, and at least one coin, and check if the map is surrounded by walls).
+- **Lock outer walls**: Lock the outer walls to prevent them from being removed.
 
 ---
 
@@ -132,8 +165,7 @@ The main logic is located in `map_generator_cli.py`, which uses the `main` funct
 
 ## Need to fix
 - [ ] The map generation algorithm is not efficient and may take a long time to generate a valid map for large dimensions.
-- [ ] Folder creation for the save file path is not implemented.
-!
+- [ ] The map editor does not check if the map is valid after editing. (flood fill algorithm)
 
 
 ## Contributing

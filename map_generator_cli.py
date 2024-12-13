@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 import argparse
+import os
 
 # ======================================================================================================================
 # Generate a valid map for the so_long game
@@ -143,6 +144,12 @@ def validate_map(map_data):
 # ======================================================================================================================
 
 def save_map_to_file(map_data, filename="maps/map.ber"):
+    # If path doesn't exist, create it
+    path = filename.split("/")[:-1]
+    path = "/".join(path)
+    if path:
+        os.makedirs(path, exist_ok=True)
+
     with open(filename, "w") as file:
         for row in map_data:
             file.write("".join(row) + "\n")
@@ -184,6 +191,13 @@ if __name__ == "__main__":
     parser.add_argument("-w", "--walls", type=str, default="10", help="Percentage of walls (default: 10)")
     parser.add_argument("-p", "--path", type=str, default="maps/map.ber", help="Path to the save file (default: maps/map.ber)")
     args = parser.parse_args()
-    check_invalid_args(args)
+
+    try:
+        check_invalid_args(args)
+    except argparse.ArgumentTypeError as e:
+        print(f"Argument error: {e}")
+        parser.print_help()
+        print("Generating a default map instead in maps/map.ber.")
+        main()
 
     main(width=args.width, height=args.height, coin_rate=args.coins, wall_rate=args.walls, path=args.path)
