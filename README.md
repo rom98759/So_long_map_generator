@@ -84,6 +84,9 @@ python map_editor.py
 
 ### Features
 
+Click on a tile to select it, then use the buttons to add or remove coins and walls. You can also change the color of the selected tile and save the edited map to a file.
+Right-click on a map to empty the cell.
+Left-click on a tile to select it. And click on the map to add the selected tile.
 
 ![Screenshot of the map editor features](img/editor_features.png)
 
