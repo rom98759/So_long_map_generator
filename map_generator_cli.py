@@ -1,5 +1,4 @@
 import random
-import sys
 from copy import deepcopy
 import argparse
 

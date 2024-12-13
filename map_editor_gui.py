@@ -19,7 +19,6 @@ def save_map_to_file(map_data, file_path):
         with open(file_path, "w") as file:
             for row in map_data:
                 file.write("".join(row) + "\n")
-        messagebox.showinfo("Success", "Map saved successfully!")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to save map: {e}")
 
@@ -54,10 +53,15 @@ def validate_map_data(map_data):
 
     return True, "The map is valid."
 
-def open_map_editor(map_data):
+def open_map_editor(map_data, file_path=None, root=None):
     """Open the map editor window."""
     if map_data is None:
         messagebox.showerror("Error", "No map data to edit!")
+        return
+
+    # Check if the map is not too large for the editor
+    if len(map_data) > 50 or len(map_data[0]) > 50:
+        messagebox.showerror("Error", "Map is too large for the editor!")
         return
 
     editor_window = tk.Toplevel()
@@ -68,11 +72,20 @@ def open_map_editor(map_data):
 
     # Colors for different tiles
     color_map = {'P': 'midnightblue', 'E': 'firebrick', 'C': 'gold', '1': 'darkgray', '0': 'darkslategray'}
-    tile_types = {'Player': 'P', 'Exit': 'E', 'Coin': 'C', 'Wall': '1', 'Empty': '0'}
+    tile_types = {'Player': 'P', 'Exit': 'E', 'Empty': '0', 'Coin': 'C', 'Wall': '1'}
 
     # Canvas for map
     canvas = tk.Canvas(editor_window, width=len(map_data[0]) * cell_size, height=len(map_data) * cell_size)
     canvas.grid(row=0, column=1, rowspan=5, padx=10, pady=10)
+
+
+    def on_close_editor():
+        """Handle closing the editor window."""
+        if messagebox.askokcancel("Quit", "Do you want to quit ?"):
+            editor_window.destroy()
+            root.lift()
+
+    editor_window.protocol("WM_DELETE_WINDOW", on_close_editor)
 
     def draw_map():
         """Draw the map on the canvas."""
@@ -137,14 +150,24 @@ def open_map_editor(map_data):
     canvas.bind("<B3-Motion>", on_canvas_motion)  # Bind right-click dragging to change to EMPTY
     canvas.bind("<ButtonRelease-3>", on_canvas_release)  # Stop dragging when mouse is released
 
-    def save_map():
+    def save_map_as():
         """Save the current map to a file."""
+        editor_window.lift()
         file_path = filedialog.asksaveasfilename(
             defaultextension=".ber",
             filetypes=[("Map Files", "*.ber")],
         )
         if file_path:
+            editor_window.lift()
             save_map_to_file(map_data, file_path)
+
+    def save_map():
+        """Save into the current file."""
+        editor_window.lift()
+        if file_path:
+            save_map_to_file(map_data, file_path)
+        else:
+            save_map_as()
 
     # Update tile selection buttons dynamically
     def update_tile_buttons_and_legend():
@@ -161,9 +184,19 @@ def open_map_editor(map_data):
             color_box = ttkb.Label(tile_frame, text="   ", background=color_map[value], width=10)
             color_box.grid(row=row, column=0, padx=10, pady=5)
             color_box.bind("<Button-1>", lambda e, name=value: edit_tile_color(name))
-            legend_label = ttkb.Label(tile_frame, text=f'[{value}]', width=10, anchor="w")
+            legend_label = ttkb.Label(tile_frame, text=f'[ {value} ]', width=10, anchor="w")
             legend_label.grid(row=row, column=2, padx=10, pady=5)
             row += 1
+
+        ttkb.Label(tile_frame, text=" ").grid(row=row, column=0, columnspan=3, padx=10, pady=2)
+        row += 1
+        ttkb.Checkbutton(tile_frame, text="Lock Outer Walls", variable=is_locked, bootstyle="info").grid(row=row, column=1, pady=5)
+
+        row += 1
+        tile_frame_util = ttkb.Frame(tile_frame)
+        tile_frame_util.grid(row=row, column=0, columnspan=3, padx=10, pady=5)
+        ttkb.Button(tile_frame_util, text="Add Tile Type", command=add_tile_type, bootstyle="info").grid(row=0, column=0, padx=5, pady=5)
+        ttkb.Button(tile_frame_util, text="Delete Selected Tile Type", command=delete_tile_type, bootstyle="danger").grid(row=0, column=1, padx=5, pady=5)
 
     tile_frame = ttkb.Frame(editor_window)
     tile_frame.grid(row=0, column=0, padx=10, pady=10, rowspan=5)
@@ -188,6 +221,7 @@ def open_map_editor(map_data):
                 color_map[type_name] = color
                 tile_types[type_name] = char
                 update_tile_buttons_and_legend()
+                editor_window.lift()
                 add_window.destroy()
                 draw_map()
 
@@ -234,9 +268,6 @@ def open_map_editor(map_data):
                 update_tile_buttons_and_legend()
                 return
 
-    ttkb.Button(editor_window, text="Add Tile Type", command=add_tile_type, bootstyle="primary").grid(row=6, column=0, pady=5)
-    ttkb.Button(editor_window, text="Delete Tile Type", command=delete_tile_type, bootstyle="danger").grid(row=7, column=0, pady=5)
-
     def validate_map():
         """Validate the current map."""
         is_valid, message = validate_map_data(map_data)
@@ -245,11 +276,16 @@ def open_map_editor(map_data):
         else:
             messagebox.showerror("Validation Error", message)
 
-    ttkb.Button(editor_window, text="Validate Map", command=validate_map, bootstyle="warning").grid(row=1, column=2, pady=0, padx=10)
-    ttkb.Checkbutton(editor_window, text="Lock Outer Walls", variable=is_locked, bootstyle="info").grid(row=2, column=2, pady=0, padx=10)
-    ttkb.Button(editor_window, text="Save Map", command=save_map, bootstyle="success").grid(row=3, column=2, pady=0, padx=10)
+    # Help Button top right corner icon ?
+    ttkb.Button(editor_window, text="Help ?", command=help_button, bootstyle="info").grid(row=0, column=2, padx=10, pady=10)
 
-    ttkb.Label(editor_window, text=" ").grid(row=0, column=3, padx=20)
+    tools_frame = ttkb.Frame(editor_window)
+    tools_frame.grid(row=1, column=2, padx=10, pady=10)
+
+    ttkb.Label(tools_frame, text="Tools", font=("Helvetica", 12, "bold")).grid(row=0, column=2, padx=10, pady=5)
+    ttkb.Button(tools_frame, text="Validate Map", command=validate_map, bootstyle="warning").grid(row=1, column=2, pady=5, padx=10)
+    ttkb.Button(tools_frame, text="Save Map", command=save_map, bootstyle="success").grid(row=3, column=2, pady=5, padx=10)
+    ttkb.Button(tools_frame, text="Save Map As", command=save_map_as, bootstyle="success").grid(row=4, column=2, pady=5, padx=10)
 
     detect_unknown_tiles()
     draw_map()
@@ -257,6 +293,7 @@ def open_map_editor(map_data):
 def help_button():
     import os
     os.system("README.md")
+
 
 def main():
     """Main GUI application."""
@@ -273,9 +310,8 @@ def main():
         if file_path:
             map_data = load_map_from_file(file_path)
             if map_data:
-                # Reduit la fenêtre principale
-                root.iconify()
-                open_map_editor(map_data)
+                root.lower()
+                open_map_editor(map_data, file_path, root)
 
     ttkb.Label(root, text="Welcome to the Map Editor", font=("Helvetica", 16)).pack(pady=10)
     ttkb.Button(root, text="Open Map", command=load_map, bootstyle="primary", width=20).pack(pady=5)

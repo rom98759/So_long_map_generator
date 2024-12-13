@@ -1,7 +1,5 @@
 import random
-import sys
 from copy import deepcopy
-import argparse
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttkb

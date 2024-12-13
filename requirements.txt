@@ -1,4 +1,1 @@
-random
-sys
-copy
-argparse
+ttkbootstrap
