@@ -86,7 +86,6 @@ def open_map_editor(map_data, file_path=None, root=None):
         """Handle closing the editor window."""
         if messagebox.askokcancel("Quit", "Do you want to quit ?"):
             editor_window.destroy()
-            root.lift()
 
     editor_window.protocol("WM_DELETE_WINDOW", on_close_editor)
 
