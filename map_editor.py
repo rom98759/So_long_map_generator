@@ -292,9 +292,19 @@ def open_map_editor(map_data, file_path=None, root=None):
     draw_map()
 
 def help_button():
-    """Ouvre une image dans une fenêtre."""
+    """Open help window."""
     help_window = tk.Toplevel()
     help_window.title("Help")
+
+    # Center the window
+    screen_width = help_window.winfo_screenwidth()
+    screen_height = help_window.winfo_screenheight()
+    window_width = 1500
+    window_height = 800
+    position_top = int(screen_height / 2 - window_height / 2)
+    position_left = int(screen_width / 2 - window_width / 2)
+    help_window.geometry(f'{window_width}x{window_height}+{position_left}+{position_top}')
+
     img = Image.open("img/editor_features.png")
     img = ImageTk.PhotoImage(img)
     panel = tk.Label(help_window, image=img)
@@ -306,6 +316,15 @@ def main():
     root = ttkb.Window(themename="darkly")
     root.title("Map Editor")
     root.geometry("500x400")
+
+    # Center the window
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    window_width = 500
+    window_height = 400
+    position_top = int(screen_height / 2 - window_height / 2)
+    position_left = int(screen_width / 2 - window_width / 2)
+    root.geometry(f'{window_width}x{window_height}+{position_left}+{position_top}')
 
     def load_map():
         """Load a map from a file and open the editor."""
