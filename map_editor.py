@@ -1,3 +1,5 @@
+import locale
+locale.setlocale(locale.LC_ALL, 'C')
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser
 import ttkbootstrap as ttkb
