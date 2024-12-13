@@ -115,11 +115,6 @@ The non-graphical version has fewer security measures compared to the graphical 
 ### Prerequisites
 
 1. **Python 3.x** installed on your machine.
-2. Install project dependencies (if applicable).
-
-```bash
-pip install -r requirements.txt
-```
 
 ### Usage
 
