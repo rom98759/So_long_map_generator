@@ -1,8 +1,6 @@
 import random
 from copy import deepcopy
 import tkinter as tk
-import locale
-locale.setlocale(locale.LC_ALL, 'C')
 from tkinter import filedialog, messagebox
 import ttkbootstrap as ttkb
 from map_editor import open_map_editor
