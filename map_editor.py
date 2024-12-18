@@ -181,7 +181,10 @@ def open_map_editor(map_data, file_path=None, root=None):
         row = 1
         for label, value in tile_types.items():
             ttkb.Radiobutton(tile_frame, text=label, variable=selected_tile, value=value).grid(row=row, column=1, sticky=tk.W, padx=10, pady=5)
-            color_box = ttkb.Label(tile_frame, text="   ", background=color_map[value], width=10)
+
+            # Check if the value exists in color_map
+            color = color_map.get(value, "#FFFFFF")  # Default to white if value is not found
+            color_box = ttkb.Label(tile_frame, text="   ", background=color, width=10)
             color_box.grid(row=row, column=0, padx=10, pady=5)
             color_box.bind("<Button-1>", lambda e, name=value: edit_tile_color(name))
             legend_label = ttkb.Label(tile_frame, text=f'[ {value} ]', width=10, anchor="w")
@@ -218,11 +221,11 @@ def open_map_editor(map_data, file_path=None, root=None):
                 return
             color = colorchooser.askcolor()[1]
             if type_name and char and color:
-                color_map[type_name] = color
+                color_map[char] = color
                 tile_types[type_name] = char
-                update_tile_buttons_and_legend()
                 editor_window.lift()
                 add_window.destroy()
+                update_tile_buttons_and_legend()
                 draw_map()
 
         # Window to add a new tile type
